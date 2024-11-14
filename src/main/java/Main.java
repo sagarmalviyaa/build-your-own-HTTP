@@ -13,10 +13,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 class RequestHandler extends Thread {
-    private InputStream inputStream;
-    private OutputStream outputStream;
-    private String fileDir;
-    private Socket clientSocket;  // Add the client socket to get the IP address
+    final private InputStream inputStream;
+    final private OutputStream outputStream;
+    final private String fileDir;
+    final private Socket clientSocket;  // Add the client socket to get the IP address
 
     // Constructor to initialize the socket and other parameters
     RequestHandler(InputStream inputStream, OutputStream outputStream,
@@ -33,8 +33,8 @@ class RequestHandler extends Thread {
             BufferedReader bufferedReader =
                     new BufferedReader(new InputStreamReader(inputStream));
             String requestLine = bufferedReader.readLine();
-            Map<String, String> requestHeaders = new HashMap<String, String>();
-            String header = null;
+            Map<String, String> requestHeaders = new HashMap<>();
+            String header;
             while ((header = bufferedReader.readLine()) != null &&
                     !header.isEmpty()) {
                 String[] keyVal = header.split(":", 2);
@@ -44,7 +44,7 @@ class RequestHandler extends Thread {
             }
 
             // Read the body of the request (if any)
-            StringBuffer bodyBuffer = new StringBuffer();
+            StringBuilder bodyBuffer = new StringBuilder();
             while (bufferedReader.ready()) {
                 bodyBuffer.append((char) bufferedReader.read());
             }
@@ -54,7 +54,7 @@ class RequestHandler extends Thread {
             String[] requestLinePieces = requestLine.split(" ", 3);
             String httpMethod = requestLinePieces[0];
             String requestTarget = requestLinePieces[1];
-            String httpVersion = requestLinePieces[2];
+            // String httpVersion = requestLinePieces[2];
 
             // Get the client's IP address
             String clientIP = clientSocket.getInetAddress().getHostAddress();
@@ -131,7 +131,7 @@ class RequestHandler extends Thread {
                 }
 
                 BufferedReader bufferedFileReader = new BufferedReader(fileReader);
-                StringBuffer stringBuffer = new StringBuffer();
+                StringBuilder stringBuffer = new StringBuilder();
                 String line;
                 while ((line = bufferedFileReader.readLine()) != null) {
                     stringBuffer.append(line);
@@ -142,7 +142,7 @@ class RequestHandler extends Thread {
                         + "Content-Type: application/octet-stream\r\n"
                         + "Content-Length: " + stringBuffer.length() +
                         "\r\n"
-                        + "\r\n" + stringBuffer.toString();
+                        + "\r\n" + stringBuffer;
                 outputStream.write(outputString.getBytes());
             } else {
                 // For any unrecognized requests, return 404 Not Found
@@ -164,8 +164,8 @@ public class Main {
     private static int activeConnections = 0;  // Static variable to track active connections
 
     public static void main(String[] args) {
-        ServerSocket serverSocket = null;
-        Socket clientSocket = null;
+        ServerSocket serverSocket;
+        Socket clientSocket;
         try {
             String directoryString = null;
             if (args.length > 1 && "--directory".equals(args[0])) {
